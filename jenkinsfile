@@ -1,45 +1,29 @@
-node{
-     def app
-
-    stage('Clone repository') {
-        /* Let's make sure we have the repository cloned to our workspace */
-
-        checkout scm
+pipeline {
+  agent any
+  stages {
+    stage('Build and Test') {
+      parallel {
+        stage('Build') {
+          steps {
+            sh 'mvn clean package'
+          }
+        }
+        stage('Unit Tests') {
+          steps {
+            sh 'mvn test'
+          }
+        }
+        stage('Integration Tests') {
+          steps {
+            sh 'mvn verify'
+          }
+        }
+      }
     }
-	stage('compile'){
-	
-	sh '''
-	  mvn compile
-	'''
-	
-	
-	}
-	
-	stage('package'){
-	
-	sh '''
-	  mvn package
-	'''
-	
-	stage ('delpoy '){
-	   steps{
-	      deploy adapters: [tomcat9(credentialsId: 'fc304d60-2019-4b1c-a072-2a45e47100c9', path: '', url: 'http://54.165.102.179:8080/')], contextPath: 'madhu', war: '**/*.war'
-            }
-	}
-  stage('DockerBuild'){
-	
-	app = docker.build("devopsvmr/mydynamicapp")
-	
-	
-	}
-       stage('DockerPush'){
-	
-	docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-            app.push("${env.BUILD_NUMBER}")
-            app.push("latest")
-      
-             }
-	
-	
-	}
+    stage('Deploy') {
+      steps {
+        sh 'mvn deploy'
+      }
+    }
+  }
 }
