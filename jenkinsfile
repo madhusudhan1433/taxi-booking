@@ -21,7 +21,10 @@ node{
 	  mvn package
 	'''
 	
-	
+	stage ('delpoy '){
+	   steps{
+	      deploy adapters: [tomcat9(credentialsId: 'fc304d60-2019-4b1c-a072-2a45e47100c9', path: '', url: 'http://54.165.102.179:8080/')], contextPath: 'madhu', war: '**/*.war'
+            }
 	}
   stage('DockerBuild'){
 	
